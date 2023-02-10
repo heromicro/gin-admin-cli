@@ -8,7 +8,11 @@ import (
 	"io"
 	"os"
 	"os/exec"
+	"strings"
 	"text/template"
+
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
 
 const (
@@ -75,7 +79,20 @@ func execGoFmt(name string) error {
 
 // 执行解析模板
 func execParseTpl(tpl string, data interface{}) (*bytes.Buffer, error) {
-	t := template.Must(template.New("").Parse(tpl))
+
+	funcMap := template.FuncMap{
+		"ToLower": strings.ToLower,
+		"ToUpper": strings.ToUpper,
+		// "Title":   strings.Title,
+		"Title": cases.Title(language.English).String,
+		"Join":  strings.Join,
+		"Truncate": func(s string) string {
+			return fmt.Sprintf("%s ...", s[:5])
+		},
+		"TrimSpace": strings.TrimSpace,
+	}
+
+	t := template.Must(template.New("").Funcs(funcMap).Parse(tpl))
 
 	buf := new(bytes.Buffer)
 	err := t.Execute(buf, data)
