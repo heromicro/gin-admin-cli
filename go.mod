@@ -1,6 +1,6 @@
 module github.com/gin-admin/gin-admin-cli/v5
 
-go 1.16
+go 1.18
 
 require (
 	github.com/cpuguy83/go-md2man/v2 v2.0.0 // indirect

@@ -5,13 +5,18 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"github.com/gin-admin/gin-admin-cli/v5/util"
 	"io"
 	"os"
 	"os/exec"
 	"path/filepath"
+
+	"github.com/gin-admin/gin-admin-cli/v5/util"
+
 	"strings"
 	"text/template"
+
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
 
 const (
@@ -79,7 +84,8 @@ func execGoFmt(name string) error {
 
 // 执行解析模板
 func execParseTpl(tpl string, data interface{}) (*bytes.Buffer, error) {
-	t := template.Must(template.New("").Funcs(template.FuncMap{
+
+	funcMap := template.FuncMap{
 		"condition": func(field TplFieldItem) string {
 			if field.ConditionArray {
 				return "len(v) > 0"
@@ -100,7 +106,18 @@ func execParseTpl(tpl string, data interface{}) (*bytes.Buffer, error) {
 		"fieldToLowerUnderlinedName": func(v string) string {
 			return util.ToLowerUnderlinedNamer(v)
 		},
-	}).Parse(tpl))
+		"ToLower": strings.ToLower,
+		"ToUpper": strings.ToUpper,
+		// "Title":   strings.Title,
+		"Title": cases.Title(language.English).String,
+		"Join":  strings.Join,
+		"Truncate": func(s string) string {
+			return fmt.Sprintf("%s ...", s[:5])
+		},
+		"TrimSpace": strings.TrimSpace,
+	}
+
+	t := template.Must(template.New("").Funcs(funcMap).Parse(tpl))
 
 	buf := new(bytes.Buffer)
 	err := t.Execute(buf, data)
