@@ -12,4 +12,7 @@
 *.out
 /gin-admin-cli
 .idea
-.vscode/settings.json
+
+/vendor 
+.vscode
+
